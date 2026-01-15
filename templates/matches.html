@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-20">
+        <div class="container mx-auto px-4 h-16 flex items-center gap-4">
+            <button onclick="toggleNav()" class="p-2 -ml-2 hover:bg-gray-100 rounded-full md:hidden">
+                <i data-lucide="menu" class="size-6 text-gray-700"></i>
+            </button>
+            <a href="{{ url_for('matching') }}"
+                class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors hidden md:block">
+                <i data-lucide="arrow-left" class="size-6"></i>
+            </a>
+            <h1 class="text-xl font-bold text-gray-900">Connections</h1>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6 max-w-2xl flex-1">
+        <!-- New Matches Reel (Horizontal) -->
+        <div class="mb-8">
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-1">New Matches</h2>
+            <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                <!-- Mock "Likes" -->
+                <div class="flex flex-col items-center gap-2 cursor-pointer group">
+                    <div
+                        class="size-16 rounded-full bg-white border-2 border-dashed border-primary flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                        <span class="text-primary font-bold">5+</span>
+                    </div>
+                    <span class="text-xs font-medium text-primary">Likes</span>
+                </div>
+
+                <!-- Empty Indicator for design visual -->
+                <div class="w-[1px] h-16 bg-gray-200 mx-2"></div>
+            </div>
+        </div>
+
+        <!-- Messages List -->
+        <div>
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-1">Messages</h2>
+            <div id="matches-list" class="space-y-1">
+                <!-- Loader -->
+                <div class="space-y-4 animate-pulse">
+                    <div class="flex gap-4 p-2">
+                        <div class="size-14 bg-gray-200 rounded-full"></div>
+                        <div class="flex-1 space-y-2 py-2">
+                            <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="empty-state" class="hidden text-center py-12">
+                <div class="inline-flex items-center justify-center size-20 bg-gray-100 rounded-full mb-4">
+                    <i data-lucide="users" class="size-8 text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">No matches yet</h3>
+                <p class="text-gray-500 mb-6">Start swiping to connect with others!</p>
+                <a href="{{ url_for('matching') }}" class="text-primary font-bold hover:underline">Find People</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentUser = null;
+
+    async function init() {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            window.location.href = '/login';
+            return;
+        }
+        currentUser = JSON.parse(userStr);
+        loadMatches();
+    }
+
+    async function loadMatches() {
+        try {
+            const res = await fetch(`/api/matches?userId=${currentUser.id}`);
+            const data = await res.json();
+
+            const list = document.getElementById('matches-list');
+            const empty = document.getElementById('empty-state');
+
+            list.innerHTML = ''; // Clear loader
+
+            if (data.success && data.matches.length > 0) {
+                empty.classList.add('hidden');
+
+                list.innerHTML = data.matches.map(m => `
+                    <a href="/chat?with=${m.id}" class="flex items-center gap-4 p-3 hover:bg-white rounded-xl transition-all cursor-pointer group">
+                        <div class="relative">
+                            <div class="size-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+                                ${m.photo ? `<img src="${m.photo}" alt="${m.name}" class="w-full h-full object-cover">` : (m.ageGroup === 'senior' ? '👴' : '🧑')}
+                            </div>
+                            <div class="absolute bottom-0 right-0 size-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-baseline mb-0.5">
+                                <h3 class="text-base font-bold text-gray-900 truncate">${m.name}</h3>
+                                <span class="text-xs text-gray-400">Now</span>
+                            </div>
+                            <p class="text-sm text-gray-500 truncate group-hover:text-primary transition-colors">Tap to chat with ${m.name}</p>
+                        </div>
+                        <div class="text-gray-300">
+                             <i data-lucide="chevron-right" class="size-5"></i>
+                        </div>
+                    </a>
+                `).join('');
+                lucide.createIcons();
+            } else {
+                empty.classList.remove('hidden');
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    init();
+</script>
+{% endblock %}

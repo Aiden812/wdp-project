@@ -1,0 +1,6 @@
+flask
+werkzeug
+supabase
+python-dotenv
+gunicorn
+eventlet

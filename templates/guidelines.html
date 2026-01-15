@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-orange-50">
+    <!-- Header -->
+    <header class="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex items-center gap-4">
+            <a href="{{ url_for('matching') }}"
+                class="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted transition-colors">
+                <i data-lucide="arrow-left" class="size-5"></i>
+            </a>
+            <h1 class="text-xl font-bold">Community Guidelines</h1>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-3xl shadow-lg p-8 mb-8 text-center">
+            <div class="inline-flex items-center justify-center size-20 rounded-full bg-primary/10 mb-4">
+                <i data-lucide="shield" class="size-10 text-primary"></i>
+            </div>
+            <h2 class="text-3xl mb-4 font-bold">Creating a Safe Community</h2>
+            <p class="text-muted-foreground text-lg">
+                GeneraLink is built on trust, respect, and meaningful connections.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl p-6 shadow-md text-center">
+                <i data-lucide="heart" class="size-8 text-primary mx-auto mb-3"></i>
+                <h3 class="font-bold mb-2">Kindness</h3>
+                <p class="text-muted-foreground">Treat everyone with warmth.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-md text-center">
+                <i data-lucide="users" class="size-8 text-secondary mx-auto mb-3"></i>
+                <h3 class="font-bold mb-2">Respect</h3>
+                <p class="text-muted-foreground">Honor different perspectives.</p>
+            </div>
+            <div class="bg-white rounded-2xl p-6 shadow-md text-center">
+                <i data-lucide="shield" class="size-8 text-accent mx-auto mb-3"></i>
+                <h3 class="font-bold mb-2">Safety</h3>
+                <p class="text-muted-foreground">Protect your privacy.</p>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-3xl shadow-lg p-8 border-2 bg-primary/5 border-primary/20">
+                <h3 class="text-2xl mb-6 flex items-center gap-2 font-bold">
+                    <i data-lucide="check" class="size-6 text-primary"></i> Do's
+                </h3>
+                <ul class="space-y-3 list-disc list-inside text-gray-700">
+                    <li>Be respectful and patient.</li>
+                    <li>Share stories genuinely.</li>
+                    <li>Listen actively.</li>
+                    <li>Report concerning behavior.</li>
+                </ul>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-lg p-8 border-2 bg-destructive/5 border-destructive/20">
+                <h3 class="text-2xl mb-6 flex items-center gap-2 font-bold text-destructive">
+                    <i data-lucide="alert-triangle" class="size-6"></i> Don'ts
+                </h3>
+                <ul class="space-y-3 list-disc list-inside text-gray-700">
+                    <li>Never share sensitive info (financial, address).</li>
+                    <li>No romantic advances - not a dating app.</li>
+                    <li>No harassment or abuse.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

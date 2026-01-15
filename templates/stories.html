@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-orange-50">
+    <header class="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('matching') }}"
+                    class="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted transition-colors">
+                    <i data-lucide="arrow-left" class="size-5"></i>
+                </a>
+                <h1 class="text-xl font-bold">Community Stories</h1>
+            </div>
+            <button onclick="toggleCreate()"
+                class="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 text-sm font-medium">
+                Share Story
+            </button>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-8 max-w-3xl">
+        <!-- Banner -->
+        <div class="bg-gradient-to-r from-primary to-secondary rounded-3xl p-8 mb-8 text-white shadow-lg">
+            <h2 class="text-2xl mb-2 font-bold">Share Your Journey</h2>
+            <p class="opacity-90">
+                Post about your intergenerational friendships, share memories, celebrate learning moments! 💚
+            </p>
+        </div>
+
+        <!-- Create Form -->
+        <div id="create-form" class="hidden bg-white rounded-3xl shadow-2xl p-8 mb-8 border-2 border-primary">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-bold">Share Your Story</h3>
+                <button onclick="toggleCreate()" class="p-2 hover:bg-gray-100 rounded-full"><i data-lucide="x"
+                        class="size-5"></i></button>
+            </div>
+            <textarea id="story-content"
+                class="w-full min-h-[120px] p-3 border rounded-xl mb-4 focus:ring-2 focus:ring-primary focus:outline-none"
+                placeholder="Share your experience..."></textarea>
+            <div class="flex justify-end">
+                <button onclick="postStory()" id="btn-post"
+                    class="bg-primary text-white rounded-md px-6 py-2 hover:bg-primary/90">Post</button>
+            </div>
+        </div>
+
+        <!-- Feed -->
+        <div id="feed" class="space-y-6">
+            <div class="text-center py-10 text-muted-foreground">Loading stories...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentUser = null;
+
+    async function init() {
+        const userStr = localStorage.getItem('user');
+        if (userStr) currentUser = JSON.parse(userStr);
+        loadStories();
+    }
+
+    async function loadStories() {
+        try {
+            const res = await fetch('/api/stories');
+            const data = await res.json();
+            if (data.success) {
+                renderStories(data.stories);
+            }
+        } catch (e) {
+            document.getElementById('feed').innerHTML = '<div class="text-center text-red-500">Failed to load stories</div>';
+        }
+    }
+
+    function renderStories(stories) {
+        const feed = document.getElementById('feed');
+        if (stories.length === 0) {
+            feed.innerHTML = '<div class="text-center py-10">No stories yet. Be the first!</div>';
+            return;
+        }
+
+        feed.innerHTML = stories.map(s => `
+            <div class="bg-white rounded-3xl shadow-lg overflow-hidden">
+                <div class="p-6 flex items-center gap-4">
+                    <div class="size-12 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-2xl flex-shrink-0">
+                        ${s.author_age_group === 'senior' ? '👴' : '🧑'}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="font-bold text-lg">${s.author_name || 'Unknown'}</h3>
+                            ${(s.badges || []).map(b => `<span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">${b}</span>`).join('')}
+                        </div>
+                        <p class="text-sm text-gray-500">${s.author_age_group === 'senior' ? 'Senior' : 'Youth'} • ${new Date(s.timestamp).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <div class="px-6 pb-4">
+                    <p class="whitespace-pre-wrap text-gray-800 leading-relaxed">${s.content}</p>
+                </div>
+                <div class="border-t p-4 flex items-center gap-6">
+                    <button onclick="likeStory('${s.id}')" class="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors">
+                        <i data-lucide="heart" class="size-5"></i>
+                        <span>${s.likes}</span>
+                    </button>
+                    <button class="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors">
+                        <i data-lucide="message-circle" class="size-5"></i>
+                        <span>Comment</span>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    function toggleCreate() {
+        if (!currentUser) {
+            window.location.href = '/login';
+            return;
+        }
+        document.getElementById('create-form').classList.toggle('hidden');
+    }
+
+    async function postStory() {
+        const content = document.getElementById('story-content').value.trim();
+        if (!content) return;
+
+        const btn = document.getElementById('btn-post');
+        btn.disabled = true;
+        btn.textContent = 'Posting...';
+
+        try {
+            const res = await fetch('/api/stories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    authorId: currentUser.id,
+                    content: content
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Story posted!');
+                document.getElementById('story-content').value = '';
+                toggleCreate();
+                loadStories();
+            } else {
+                showToast('Error posting', 'error');
+            }
+        } catch (e) {
+            showToast('Error posting', 'error');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Post';
+    }
+
+    async function likeStory(id) {
+        // Optimistic update could happen here, but for now just fetch
+        try {
+            await fetch(`/api/stories/${id}/like`, { method: 'POST' });
+            loadStories(); // Refresh to see updated count
+        } catch (e) { }
+    }
+
+    init();
+</script>
+{% endblock %}

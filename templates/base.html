@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeneraLink</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0F766E', // teal-700
+                        secondary: '#F97316', // orange-500
+                        accent: '#3B82F6', // blue-500
+                        background: '#F0FDFA', // teal-50
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #F0FDFA;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="min-h-screen">
+    <div id="app-root">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Navigation Drawer -->
+    <div id="nav-drawer-overlay" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity" onclick="toggleNav()">
+    </div>
+    <div id="nav-drawer"
+        class="fixed top-0 left-0 h-full w-64 bg-white z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+        <div class="p-6 border-b flex items-center justify-between">
+            <h2 class="text-xl font-bold text-primary">GeneraLink</h2>
+            <button onclick="toggleNav()" class="p-2 hover:bg-gray-100 rounded-full">
+                <i data-lucide="x" class="size-6 text-gray-500"></i>
+            </button>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <a href="{{ url_for('matching') }}"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium">
+                <i data-lucide="sprout" class="size-5 text-primary"></i> Find Matches
+            </a>
+            <a href="{{ url_for('matches_view') }}"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium">
+                <i data-lucide="message-circle" class="size-5 text-secondary"></i> Connections
+            </a>
+            <a href="{{ url_for('profile') }}"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium">
+                <i data-lucide="user" class="size-5 text-accent"></i> My Profile
+            </a>
+            <hr class="my-2 border-gray-100">
+            <a href="{{ url_for('guidelines') }}"
+                class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-gray-700 font-medium">
+                <i data-lucide="book-open" class="size-5 text-gray-500"></i> Guidelines
+            </a>
+        </nav>
+        <div class="p-4 border-t bg-gray-50">
+            <div class="flex items-center gap-3 mb-4 px-3">
+                <div class="size-8 rounded-full bg-primary/20 flex items-center justify-center text-sm" id="nav-avatar">
+                    👤
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-sm truncate" id="nav-name">User</p>
+                    <p class="text-xs text-gray-500 truncate" id="nav-email">...</p>
+                </div>
+            </div>
+            <button onclick="logout()"
+                class="w-full flex items-center justify-center gap-2 p-2 rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10 text-sm font-bold">
+                <i data-lucide="log-out" class="size-4"></i> Sign Out
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"
+        class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // Simple Toast implementation
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded shadow-lg text-white mb-2 transition-all transform translate-x-full ${type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                }`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-x-full');
+            });
+
+            // Remove after 3s
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+    <!-- Socket.IO Client -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        // Apply saved font size globally
+        (function () {
+            const savedSize = localStorage.getItem('fontSize');
+            if (savedSize) {
+                const sizes = { 'normal': '16px', 'large': '20px', 'xlarge': '24px' };
+                document.documentElement.style.fontSize = sizes[savedSize] || '16px';
+            }
+        })();
+
+        // Navigation Drawer Logic
+        function toggleNav() {
+            const drawer = document.getElementById('nav-drawer');
+            const overlay = document.getElementById('nav-drawer-overlay');
+
+            if (drawer.classList.contains('-translate-x-full')) {
+                // Open
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Close
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Sign out?')) {
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            }
+        }
+
+        // Populate drawer user info
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                const avatarEl = document.getElementById('nav-avatar');
+                const nameEl = document.getElementById('nav-name');
+                const emailEl = document.getElementById('nav-email');
+
+                if (avatarEl && nameEl && emailEl) {
+                    nameEl.textContent = user.name || 'User';
+                    emailEl.textContent = user.email || '';
+                    if (user.photo) {
+                        avatarEl.innerHTML = `<img src="${user.photo}" alt="User" class="w-full h-full object-cover rounded-full">`;
+                    } else {
+                        avatarEl.textContent = user.ageGroup === 'senior' ? '👴' : '🧑';
+                    }
+                }
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

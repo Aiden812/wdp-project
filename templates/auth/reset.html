@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-orange-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Logo Header -->
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center size-16 rounded-full bg-gradient-to-br from-primary to-secondary mb-4">
+                <i data-lucide="heart" class="size-8 text-white"></i>
+            </div>
+            <h1 class="text-4xl text-primary mb-2 font-bold">Reset Password</h1>
+            <p class="text-muted-foreground text-lg" id="header-text">
+                Enter your phone number to receive a password reset code
+            </p>
+        </div>
+
+        <!-- Reset Card -->
+        <div class="bg-white rounded-3xl shadow-2xl p-8">
+
+            <!-- Step 1: Input -->
+            <div id="step-phone">
+                <div class="space-y-6">
+                    <div>
+                        <label for="reset-phone" class="block text-lg font-medium mb-2">Singapore Phone Number</label>
+                        <div class="flex gap-2 mt-2">
+                            <div class="flex items-center px-4 h-14 bg-muted rounded-xl text-lg border border-input">
+                                <span>+65</span>
+                            </div>
+                            <input id="reset-phone" type="tel" placeholder="8XXXXXXX"
+                                class="flex h-14 w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                maxlength="8" />
+                        </div>
+                        <p class="text-sm text-muted-foreground mt-2">
+                            Enter your 8-digit phone number without spaces
+                        </p>
+                    </div>
+
+                    <button onclick="sendResetCode()"
+                        class="inline-flex items-center justify-center rounded-md text-lg font-medium bg-primary text-primary-foreground hover:bg-primary/90 w-full h-14 transition-colors"
+                        id="btn-send">
+                        Send Reset Code
+                    </button>
+
+                    <a href="/login"
+                        class="inline-flex items-center justify-center rounded-md text-base font-medium hover:bg-accent hover:text-accent-foreground w-full h-10 transition-colors">
+                        <i data-lucide="arrow-left" class="size-4 mr-2"></i>
+                        Back to Login
+                    </a>
+                </div>
+            </div>
+
+            <!-- Step 2: Sent -->
+            <div id="step-sent" class="hidden text-center space-y-6">
+                <div class="inline-flex items-center justify-center size-20 rounded-full bg-primary/10 mb-4">
+                    <i data-lucide="phone" class="size-10 text-primary"></i>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl mb-2 font-semibold">Check Your Phone</h3>
+                    <p class="text-muted-foreground text-lg">
+                        We've sent a password reset code to
+                        <br />
+                        <span class="font-medium">+65 <span id="display-phone"></span></span>
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
+                    <p class="text-base text-secondary">
+                        The code will expire in 15 minutes. If you don't receive the SMS, please try again.
+                    </p>
+                </div>
+
+                <a href="/login"
+                    class="inline-flex items-center justify-center rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground w-full h-14 text-lg transition-colors">
+                    Back to Login
+                </a>
+
+                <button onclick="resetFlow()" class="text-base text-primary hover:underline">
+                    Didn't receive the code? Try again
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function sendResetCode() {
+        const phone = document.getElementById('reset-phone').value;
+        if (!phone || phone.length !== 8) {
+            showToast('Please enter a valid 8-digit phone number', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-send');
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+
+        // Mock API
+        setTimeout(() => {
+            document.getElementById('step-phone').classList.add('hidden');
+            document.getElementById('step-sent').classList.remove('hidden');
+            document.getElementById('header-text').textContent = "We've sent you a reset code";
+            document.getElementById('display-phone').textContent = phone;
+            showToast('Reset code sent!');
+            lucide.createIcons();
+        }, 1500);
+    }
+
+    function resetFlow() {
+        document.getElementById('step-sent').classList.add('hidden');
+        document.getElementById('step-phone').classList.remove('hidden');
+        document.getElementById('header-text').textContent = "Enter your phone number to receive a password reset code";
+        document.getElementById('btn-send').disabled = false;
+        document.getElementById('btn-send').textContent = "Send Reset Code";
+    }
+</script>
+{% endblock %}

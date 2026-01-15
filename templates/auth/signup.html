@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div
+    class="min-h-screen flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center">
+    <div class="absolute inset-0 bg-gradient-to-br from-orange-900/80 via-orange-800/80 to-black/60 backdrop-blur-sm">
+    </div>
+
+    <div class="relative w-full max-w-lg">
+        <!-- Brand -->
+        <div class="flex justify-center mb-6">
+            <div class="flex items-center gap-3 text-white">
+                <div class="bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                    <i data-lucide="sprout" class="size-6"></i>
+                </div>
+                <span class="text-2xl font-bold tracking-tight">GeneraLink</span>
+            </div>
+        </div>
+
+        <!-- Glass Card -->
+        <div class="glass rounded-3xl p-1 shadow-2xl overflow-hidden">
+            <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[20px]">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Create Account</h2>
+                    <p class="text-gray-500 text-sm">Join our community today.</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex mb-8 relative">
+                    <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-10 rounded"></div>
+                    <div class="absolute top-1/2 left-0 h-1 bg-secondary -z-10 rounded transition-all duration-300"
+                        style="width: 0%" id="progress-bar"></div>
+
+                    <div class="flex-1 flex justify-center">
+                        <div class="size-8 rounded-full bg-secondary text-white flex items-center justify-center font-bold text-sm shadow-lg ring-4 ring-white"
+                            id="step-1-indicator">1</div>
+                    </div>
+                    <div class="flex-1 flex justify-center">
+                        <div class="size-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm ring-4 ring-white transition-colors duration-300"
+                            id="step-2-indicator">2</div>
+                    </div>
+                    <div class="flex-1 flex justify-center">
+                        <div class="size-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm ring-4 ring-white transition-colors duration-300"
+                            id="step-3-indicator">3</div>
+                    </div>
+                </div>
+
+                <form id="signup-form" class="space-y-6">
+                    <!-- Step 1: Credentials -->
+                    <div id="step-1" class="step-content space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
+                            <input type="email" name="email"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
+                                placeholder="you@example.com" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Password</label>
+                            <input type="password" name="password"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
+                                placeholder="At least 8 characters" required minlength="8">
+                        </div>
+                        <button type="button" onclick="nextStep(2)"
+                            class="w-full py-3 bg-secondary text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:bg-orange-600 transition-all">Continue</button>
+                    </div>
+
+                    <!-- Step 2: Personal Info -->
+                    <div id="step-2" class="step-content hidden space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Full Name</label>
+                            <input type="text" name="name"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
+                                placeholder="John Doe" required>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">NRIC (Last
+                                    4)</label>
+                                <input type="text" name="nric"
+                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
+                                    placeholder="123A" required maxlength="4">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Phone</label>
+                                <input type="tel" name="phone"
+                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all"
+                                    placeholder="9123 4567" required>
+                            </div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="prevStep(1)"
+                                class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-all">Back</button>
+                            <button type="button" onclick="nextStep(3)"
+                                class="flex-1 py-3 bg-secondary text-white rounded-xl font-bold shadow-lg hover:bg-orange-600 transition-all">Continue</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Profile -->
+                    <div id="step-3" class="step-content hidden space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">I am a...</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="role" value="youth" class="peer sr-only" checked>
+                                    <div
+                                        class="p-4 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 peer-checked:border-secondary peer-checked:bg-orange-50 transition-all text-center">
+                                        <div class="text-2xl mb-1">🧑</div>
+                                        <div class="font-bold text-gray-800">Youth</div>
+                                        <div class="text-xs text-gray-500">Under 35</div>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="role" value="senior" class="peer sr-only">
+                                    <div
+                                        class="p-4 rounded-xl border-2 border-gray-200 bg-white hover:bg-gray-50 peer-checked:border-secondary peer-checked:bg-orange-50 transition-all text-center">
+                                        <div class="text-2xl mb-1">👴</div>
+                                        <div class="font-bold text-gray-800">Senior</div>
+                                        <div class="text-xs text-gray-500">55 & Above</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <div class="flex gap-3">
+                                <button type="button" onclick="prevStep(2)"
+                                    class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-all">Back</button>
+                                <button type="submit" id="btn-submit"
+                                    class="flex-[2] py-3 bg-gradient-to-r from-secondary to-red-500 text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                                    Create Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="mt-6 text-center text-sm">
+                    <p class="text-gray-600">Already have an account? <a href="/login"
+                            class="text-secondary font-bold hover:underline">Log in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentStep = 1;
+
+    function nextStep(step) {
+        // Simple validation visualization could go here
+        showStep(step);
+    }
+
+    function prevStep(step) {
+        showStep(step);
+    }
+
+    function showStep(step) {
+        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById(`step-${step}`).classList.remove('hidden');
+
+        // Update Indicators
+        for (let i = 1; i <= 3; i++) {
+            const el = document.getElementById(`step-${i}-indicator`);
+            if (i <= step) {
+                el.classList.add('bg-secondary', 'text-white');
+                el.classList.remove('bg-gray-200', 'text-gray-500');
+            } else {
+                el.classList.remove('bg-secondary', 'text-white');
+                el.classList.add('bg-gray-200', 'text-gray-500');
+            }
+        }
+
+        // Update Bar
+        const percentages = { 1: '0%', 2: '50%', 3: '100%' };
+        document.getElementById('progress-bar').style.width = percentages[step];
+
+        currentStep = step;
+    }
+
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-submit');
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        // Add minimal mock data for profile structure
+        data.profile = {
+            name: data.name,
+            ageGroup: data.role,
+            age: data.role === 'senior' ? 65 : 20, // Mock
+            interests: [],
+            verified: false
+        };
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="animate-spin inline-block" data-lucide="loader-2"></i> Creating...';
+        lucide.createIcons();
+
+        try {
+            const res = await fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const resData = await res.json();
+
+            if (resData.success) {
+                localStorage.setItem('user', JSON.stringify(resData.user));
+                showToast('Account created! Welcome!', 'success');
+                setTimeout(() => window.location.href = '/onboarding', 1500);
+            } else {
+                showToast(resData.error || 'Signup failed', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Create Account';
+            }
+        } catch (e) {
+            showToast('Connection error', 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Create Account';
+        }
+    });
+</script>
+{% endblock %}

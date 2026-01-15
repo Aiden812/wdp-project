@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden relative">
+    <!-- Navbar (Simplified for App) -->
+    <header class="bg-white/80 backdrop-blur-md border-b sticky top-0 z-20">
+        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button onclick="toggleNav()" class="p-2 -ml-2 hover:bg-gray-100 rounded-full md:hidden">
+                    <i data-lucide="menu" class="size-6 text-gray-700"></i>
+                </button>
+                <div class="bg-gradient-to-br from-primary to-teal-600 text-white p-1.5 rounded-lg">
+                    <i data-lucide="sprout" class="size-5"></i>
+                </div>
+                <span class="font-bold text-xl text-gray-900 tracking-tight">GeneraLink</span>
+            </div>
+            <div class="flex items-center gap-4 hidden md:flex">
+                <a href="{{ url_for('matches_view') }}"
+                    class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative">
+                    <i data-lucide="message-circle" class="size-6"></i>
+                    <span id="match-badge"
+                        class="absolute top-1 right-1 size-2.5 bg-red-500 border-2 border-white rounded-full hidden"></span>
+                </a>
+                <a href="{{ url_for('profile') }}"
+                    class="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                    <i data-lucide="user" class="size-6"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col items-center justify-center p-4 relative w-full max-w-lg mx-auto">
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center animate-pulse">
+            <div class="size-24 rounded-full bg-gray-200 mx-auto mb-4"></div>
+            <div class="h-4 w-48 bg-gray-200 rounded mx-auto mb-2"></div>
+            <div class="h-4 w-32 bg-gray-200 rounded mx-auto"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center max-w-sm">
+            <div
+                class="bg-white rounded-full p-6 shadow-xl w-fit mx-auto mb-6 transform hover:scale-110 transition-transform duration-500">
+                <span class="text-6xl">🎉</span>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">You're all caught up!</h2>
+            <p class="text-gray-500 mb-8">No new profiles nearby. Check back later or update your preferences.</p>
+            <button onclick="loadProfiles()"
+                class="px-8 py-3 bg-white border border-gray-200 text-gray-900 font-bold rounded-full shadow-sm hover:shadow-md hover:bg-gray-50 transition-all">
+                Refresh Cards
+            </button>
+        </div>
+
+        <!-- Card Container -->
+        <div id="card-container" class="relative w-full aspect-[3/4] hidden perspective-1000 mb-8 max-w-sm">
+            <!-- Card -->
+            <!-- Card -->
+            <div id="profile-card"
+                class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-500 ease-out hover:shadow-3xl flex flex-col h-full">
+                <!-- Image Area -->
+                <div class="h-3/5 bg-gradient-to-br from-gray-200 to-gray-300 relative group overflow-hidden">
+                    <div class="absolute inset-0 flex items-center justify-center text-9xl transition-transform duration-700 group-hover:scale-110"
+                        id="card-img">
+                        🧑
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                    <div class="absolute bottom-0 left-0 p-6 text-white w-full">
+                        <div class="flex items-end justify-between mb-2">
+                            <div>
+                                <h2 class="text-3xl font-bold tracking-tight inline-flex items-center gap-2">
+                                    <span id="card-name">Name</span>
+                                    <span id="card-age" class="text-xl font-medium opacity-90">20</span>
+                                </h2>
+                            </div>
+                            <div
+                                class="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-sm font-semibold border border-white/30 flex items-center gap-1">
+                                <span class="text-green-400">●</span> <span id="card-compatibility">95</span>% Match
+                            </div>
+                        </div>
+                        <p class="text-white/90 text-sm line-clamp-2" id="card-role">University Student</p>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="p-6 flex flex-col bg-white overflow-y-auto flex-1 h-full">
+                    <div>
+                        <div class="flex flex-wrap gap-2 mb-4" id="card-badges">
+                            <!-- Badges injected here -->
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="mb-4">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">About Me</h3>
+                            <p class="text-gray-700 leading-relaxed" id="card-bio">
+                                No bio available.
+                            </p>
+                        </div>
+
+                        <!-- Skills -->
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <div id="section-share" class="bg-orange-50 p-3 rounded-xl border border-orange-100 hidden">
+                                <h3
+                                    class="text-xs font-bold text-orange-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    <i data-lucide="zap" class="size-3"></i> I Can Share
+                                </h3>
+                                <p class="text-sm text-gray-800" id="card-share"></p>
+                            </div>
+
+                            <div id="section-learn" class="bg-teal-50 p-3 rounded-xl border border-teal-100 hidden">
+                                <h3
+                                    class="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    <i data-lucide="book-open" class="size-3"></i> I Want To Learn
+                                </h3>
+                                <p class="text-sm text-gray-800" id="card-learn"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shared Interest Highlight -->
+                    <div
+                        class="mt-auto py-3 px-4 bg-primary/5 rounded-xl border border-primary/10 flex items-center gap-3">
+                        <div class="p-1.5 bg-white rounded-full shadow-sm text-primary">
+                            <i data-lucide="sparkles" class="size-4"></i>
+                        </div>
+                        <div class="text-sm">
+                            <span class="font-bold text-primary">Common Interest:</span>
+                            <span class="text-gray-700" id="card-common-interest">Technology</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons (Fixed Position) -->
+        <div id="action-buttons" class="flex justify-center items-center gap-6 hidden w-full pb-4">
+            <button onclick="handleSwipe('left')"
+                class="size-16 bg-white rounded-full shadow-2xl text-red-500 hover:bg-red-50 hover:scale-110 transition-all flex items-center justify-center border border-gray-100 cursor-pointer z-50">
+                <i data-lucide="x" class="size-8"></i>
+            </button>
+            <button onclick="superLike()"
+                class="size-12 bg-white rounded-full shadow-2xl text-blue-500 hover:bg-blue-50 hover:scale-110 transition-all flex items-center justify-center border border-gray-100 cursor-pointer z-50">
+                <i data-lucide="star" class="size-6"></i>
+            </button>
+            <button onclick="handleSwipe('right')"
+                class="size-16 bg-gradient-to-br from-primary to-teal-600 text-white rounded-full shadow-2xl shadow-primary/30 hover:shadow-2xl hover:scale-110 transition-all flex items-center justify-center cursor-pointer z-50">
+                <i data-lucide="heart" class="size-8"></i>
+            </button>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let profiles = [];
+    let currentIndex = 0;
+    let currentUser = null;
+
+    async function init() {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            window.location.href = '/login';
+            return;
+        }
+        currentUser = JSON.parse(userStr);
+
+        // Fetch user's profile for matching comparison
+        try {
+            const profileRes = await fetch(`/api/profile?userId=${currentUser.id}`);
+            const profileData = await profileRes.json();
+            if (profileData.success && profileData.profile) {
+                localStorage.setItem('userProfile', JSON.stringify(profileData.profile));
+            }
+        } catch (e) {
+            console.log('Could not fetch profile:', e);
+        }
+
+        loadProfiles();
+    }
+
+    async function loadProfiles() {
+        // Reset UI
+        document.getElementById('loading-state').classList.remove('hidden');
+        document.getElementById('empty-state').classList.add('hidden');
+        document.getElementById('card-container').classList.add('hidden');
+        document.getElementById('action-buttons').classList.add('hidden');
+
+        try {
+            const res = await fetch(`/api/matches/potential?userId=${currentUser.id}`);
+            const data = await res.json();
+
+            if (data.success) {
+                profiles = data.profiles;
+                currentIndex = 0;
+                renderCard();
+            } else {
+                showToast('Failed to load profiles', 'error');
+            }
+        } catch (e) {
+            showToast('Network error', 'error');
+        }
+
+        document.getElementById('loading-state').classList.add('hidden');
+    }
+
+    function renderCard() {
+        const container = document.getElementById('card-container');
+        const empty = document.getElementById('empty-state');
+        const actions = document.getElementById('action-buttons');
+
+        if (currentIndex >= profiles.length) {
+            container.classList.add('hidden');
+            actions.classList.add('hidden');
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        const p = profiles[currentIndex];
+
+        // Populate Data
+        document.getElementById('card-name').textContent = p.name || 'User';
+        document.getElementById('card-age').textContent = p.age || '';
+        document.getElementById('card-role').textContent = p.bio ? p.bio.split('.')[0] : (p.ageGroup === 'senior' ? 'Senior' : 'Student');
+        document.getElementById('card-bio').textContent = p.bio || 'No bio available.';
+
+        // Populate Skills
+        const shareEl = document.getElementById('card-share');
+        const shareSec = document.getElementById('section-share');
+        if (p.canShare) {
+            shareEl.textContent = p.canShare;
+            shareSec.classList.remove('hidden');
+        } else {
+            shareSec.classList.add('hidden');
+        }
+
+        const learnEl = document.getElementById('card-learn');
+        const learnSec = document.getElementById('section-learn');
+        if (p.wantToLearn) {
+            learnEl.textContent = p.wantToLearn;
+            learnSec.classList.remove('hidden');
+        } else {
+            learnSec.classList.add('hidden');
+        }
+        // Show photo if available, else emoji
+        const cardImg = document.getElementById('card-img');
+        if (p.photo) {
+            cardImg.innerHTML = `<img src="${p.photo}" alt="${p.name}" class="w-full h-full object-cover">`;
+        } else {
+            cardImg.innerHTML = '';
+            cardImg.textContent = p.ageGroup === 'senior' ? '👴' : '🧑';
+        }
+
+        // Badges - highlight common interests
+        const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        const userInterests = userProfile.interests || [];
+        const sharedInterests = p.interests?.filter(i => userInterests.includes(i)) || [];
+
+        const badgesHtml = p.interests?.slice(0, 4).map(i => {
+            const isShared = sharedInterests.includes(i);
+            if (isShared) {
+                return `<span class="px-2.5 py-1 rounded-md bg-primary/20 text-primary text-xs font-semibold border border-primary/30 ring-2 ring-primary/20">
+                    ✓ ${i}
+                </span>`;
+            }
+            return `<span class="px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 text-xs font-semibold border border-gray-200">
+                ${i}
+            </span>`;
+        }).join('') || '';
+        document.getElementById('card-badges').innerHTML = badgesHtml;
+
+        // Calculate real compatibility score
+        const score = calculateCompatibility(userProfile, p);
+        document.getElementById('card-compatibility').textContent = score;
+
+        // Show actual common interests (not random)
+        if (sharedInterests.length > 0) {
+            document.getElementById('card-common-interest').textContent = sharedInterests.join(', ');
+        } else {
+            document.getElementById('card-common-interest').textContent = 'New experiences to share';
+        }
+
+        // Show UI
+        container.classList.remove('hidden');
+        actions.classList.remove('hidden');
+        empty.classList.add('hidden');
+
+        // Reset Styles
+        const card = document.getElementById('profile-card');
+        card.style.transform = '';
+        card.style.opacity = '1';
+    }
+
+    function calculateCompatibility(user, match) {
+        const userInterests = user.interests || [];
+        const matchInterests = match.interests || [];
+
+        // Find overlapping interests
+        const sharedInterests = userInterests.filter(i => matchInterests.includes(i));
+
+        // Avoid division by zero
+        if (matchInterests.length === 0) return 0;
+
+        // Calculate percentage: shared / match's interests * 100
+        const score = Math.round((sharedInterests.length / matchInterests.length) * 100);
+
+        return score;
+    }
+
+    function findCommonInterest(user, match) {
+        const userInterests = user.interests || [];
+        const matchInterests = match.interests || [];
+        const common = userInterests.find(i => matchInterests.includes(i));
+        return common || matchInterests[0] || 'New experiences';
+    }
+
+    async function handleSwipe(direction) {
+        const card = document.getElementById('profile-card');
+        const currentProfile = profiles[currentIndex];
+
+        // Animate
+        const rotate = direction === 'left' ? -20 : 20;
+        const translate = direction === 'left' ? -200 : 200;
+        card.style.transition = 'transform 0.4s ease-in, opacity 0.3s';
+        card.style.transform = `translateX(${translate}%) rotate(${rotate}deg)`;
+        card.style.opacity = '0';
+
+        // Logic
+        if (direction === 'right') {
+            try {
+                await fetch('/api/matches', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        matchId: currentProfile.id
+                    })
+                });
+                showToast(`Matched with ${currentProfile.name}!`, 'success');
+                // Could show a match modal here
+            } catch (e) { }
+        }
+
+        // Next Card
+        setTimeout(() => {
+            currentIndex++;
+            renderCard();
+        }, 300);
+    }
+
+    function superLike() {
+        showToast('Super Like sent! ⭐', 'success');
+        handleSwipe('right');
+    }
+
+    init();
+</script>
+{% endblock %}

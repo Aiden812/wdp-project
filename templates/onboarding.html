@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-orange-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-8 md:p-12">
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex justify-between mb-2">
+                <span class="text-muted-foreground" id="step-count">Step 1 of 2</span>
+                <span class="text-muted-foreground" id="step-percent">50%</span>
+            </div>
+            <div class="h-2 bg-muted rounded-full overflow-hidden">
+                <div id="progress-bar"
+                    class="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-300"
+                    style="width: 50%"></div>
+            </div>
+        </div>
+
+        <!-- Step Content -->
+        <div id="step-container" class="mb-8 min-h-[300px]">
+
+            <!-- Step 1: Interests -->
+            <div id="step-1" class="step-pane">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl mb-2 font-bold">What are your interests?</h2>
+                    <p class="text-muted-foreground">Select all that apply to help us match you.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="interests-grid">
+                    <!-- JS populated -->
+                </div>
+            </div>
+
+            <!-- Step 2: Details -->
+            <div id="step-2" class="step-pane hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl mb-2 font-bold">Tell us more</h2>
+                    <p class="text-muted-foreground">Share what you can teach and what you want to learn.</p>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-lg font-medium mb-2">What can you share or teach?</label>
+                        <textarea id="input-share"
+                            placeholder="e.g., Traditional recipes, life experiences, tech skills..."
+                            class="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            oninput="validateStep()"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-lg font-medium mb-2">What do you want to learn?</label>
+                        <textarea id="input-learn" placeholder="e.g., History, cooking, using social media..."
+                            class="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            oninput="validateStep()"></textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex gap-4">
+            <button onclick="prevStep()"
+                class="inline-flex items-center justify-center rounded-md text-lg font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground flex-1 h-14">
+                <i data-lucide="arrow-left" class="size-5 mr-2"></i> Back
+            </button>
+            <button onclick="nextStep()" id="btn-next"
+                class="inline-flex items-center justify-center rounded-md text-lg font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 flex-1 h-14"
+                disabled>
+                Next <i data-lucide="arrow-right" class="size-5 ml-2"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentStep = 1;
+    const totalSteps = 2;
+    // We only track updates here
+    const profileUpdates = {
+        interests: [],
+        canShare: "",
+        wantToLearn: ""
+    };
+
+    const INTERESTS = [
+        "Cooking & Recipes", "History & Heritage", "Technology", "Music & Arts", "Life Stories",
+        "Gardening", "Sports & Fitness", "Languages", "Travel", "Crafts & Hobbies",
+    ];
+
+    // Init interests
+    const grid = document.getElementById('interests-grid');
+    INTERESTS.forEach(i => {
+        const div = document.createElement('div');
+        div.className = "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all border-muted hover:border-primary/50";
+        div.onclick = () => toggleInterest(div, i);
+        div.innerHTML = `<div class="size-4 border border-primary rounded flex items-center justify-center pointer-events-none"><i data-lucide="check" class="size-3 text-white hidden"></i></div><span>${i}</span>`;
+        grid.appendChild(div);
+    });
+
+    function updateProgress() {
+        document.getElementById('step-count').textContent = `Step ${currentStep} of ${totalSteps}`;
+        const pct = Math.round((currentStep / totalSteps) * 100);
+        document.getElementById('step-percent').textContent = `${pct}%`;
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+    }
+
+    function validateStep() {
+        let valid = false;
+        if (currentStep === 1) {
+            valid = profileUpdates.interests.length > 0;
+        } else if (currentStep === 2) {
+            profileUpdates.canShare = document.getElementById('input-share').value;
+            profileUpdates.wantToLearn = document.getElementById('input-learn').value;
+            valid = profileUpdates.canShare.trim().length > 0 || profileUpdates.wantToLearn.trim().length > 0;
+        }
+        document.getElementById('btn-next').disabled = !valid;
+        if (currentStep === totalSteps) {
+            document.getElementById('btn-next').innerHTML = `Complete <i data-lucide="check" class="size-5 ml-2"></i>`;
+        } else {
+            document.getElementById('btn-next').innerHTML = `Next <i data-lucide="arrow-right" class="size-5 ml-2"></i>`;
+            lucide.createIcons();
+        }
+    }
+
+    function nextStep() {
+        if (currentStep < totalSteps) {
+            document.getElementById(`step-${currentStep}`).classList.add('hidden');
+            currentStep++;
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            updateProgress();
+            validateStep();
+            lucide.createIcons();
+        } else {
+            saveProfile();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            document.getElementById(`step-${currentStep}`).classList.add('hidden');
+            currentStep--;
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            updateProgress();
+            validateStep();
+        } else {
+            // If they go back from step 1, maybe matching or skip?
+            // Actually, let's keep it simple: go to matching (skip onboarding)
+            if (confirm('Skip profile personalization?')) {
+                window.location.href = '/matching';
+            }
+        }
+    }
+
+    function toggleInterest(el, interest) {
+        const idx = profileUpdates.interests.indexOf(interest);
+        const checkIcon = el.querySelector('i');
+
+        if (idx === -1) {
+            profileUpdates.interests.push(interest);
+            el.className = "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all border-primary bg-primary/10";
+            checkIcon.classList.remove('hidden');
+        } else {
+            profileUpdates.interests.splice(idx, 1);
+            el.className = "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all border-muted hover:border-primary/50";
+            checkIcon.classList.add('hidden');
+        }
+        validateStep();
+    }
+
+    async function saveProfile() {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+            showToast('Not logged in!', 'error');
+            return;
+        }
+        const user = JSON.parse(userStr);
+
+        // We merge with existing user data concept if we had it, 
+        // but here we just send updates to backend.
+
+        try {
+            const res = await fetch('/api/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    updates: profileUpdates
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Profile updated!');
+                // Save profile to localStorage for matching page compatibility calculation
+                localStorage.setItem('userProfile', JSON.stringify(data.profile));
+                setTimeout(() => window.location.href = '/matching', 1000);
+            } else {
+                showToast('Error saving profile', 'error');
+            }
+        } catch (e) {
+            showToast('Error saving profile', 'error');
+        }
+    }
+</script>
+{% endblock %}
