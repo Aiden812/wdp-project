@@ -157,29 +157,9 @@
             window.location.href = '/login';
             return;
         }
-        // Ideally fetch fresh data from API, but for now use what we have or stored
+       
         currentUser = JSON.parse(userStr);
-        // If we store profile in user object, great. If not, we might need to fetch it.
-        // Assuming user object has profile data as per login response or we need to fetch profile endpoint if we had one.
-        // The current `/api/login` returns minimal info. Let's assume we saved more during onboarding or we should fetch.
-        // Actually, db.py `get_user` returns profile data merged. 
-        // Let's assume localStorage has it or we can hit `/api/profile` (GET) if we added it?
-        // We only added POST (update).
-        // Let's rely on localStorage being up to date for this MVP or fetch via a new GET endpoint?
-        // Wait, `db.get_user_by_credentials` does NOT merge profile_data in `app.py`.
-        // `app.py` `api_login` returns `{"id": user['id'], "email": user['email']}`.
-        // This is a MISSING feature. I should added GET /api/profile endpoint that takes query param userId.
-        // I'll assume I can add it or just use what I have.
-        // Wait, I can use `/api/matches/potential?userId=X` to get OTHERS, but not myself easily?
-        // Actually for this demo I might just display what I have.
-        // But `onboarding` saves to DB.
-
-        // I will add a quick `fetch` to `api/matches` (which gets matches) doesn't help.
-        // I'll add a helper function `getUserDetails` that calls a new endpoint I'll add quickly to `app.py` via 'multi_replace' later if needed?
-        // No, I'll essentially rely on the fact that I should probably have pulled the user profile on login.
-        // Let's assume for now the user is valid and I'll mock the missing pieces or if I can't fetch.
-
-        // Let's fetch "all users" from admin endpoint to find myself? Hacky but works for MVP.
+       
         try {
             const res = await fetch('/api/users');
             if (res.ok) {
@@ -392,4 +372,5 @@
 
     init();
 </script>
+
 {% endblock %}
