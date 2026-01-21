@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/matching.css') }}">
+<script src="{{ url_for('static', filename='js/matching.js') }}"></script>
+
+<div class="page-wrapper">
+    <h2 class="page-title">Friendship & Learning Match</h2>
+    <p class="subtitle">✨ Profiles sorted by interest compatibility</p>
+
+    <div id="swipe-card" class="profile-card">
+
+     
+        <div class="badge badge-match" id="match-badge">0% Match</div>
+
+        <div class="badge badge-verified">Verified</div>
+
+  
+        <div class="avatar" id="user-avatar">👵</div>
+
+
+  
+        <div class="name-age" id="user-name"></div>
+        <div class="role" id="user-role"></div>
+
+   
+        <div class="shared-box">
+            <div class="shared-title">✨ Shared Interests</div>
+            <div class="shared-text" id="shared-text"></div>
+        </div>
+
+      
+        <div class="section">
+            <div class="section-title">About</div>
+            <div class="section-text" id="user-about"></div>
+        </div>
+
+   
+        <div class="section">
+            <div class="section-title">All Interests</div>
+            <div class="tags" id="interest-tags"></div>
+        </div>
+
+   
+        <div class="actions">
+            <button class="btn-pass" onclick="passCurrent()">✖</button>
+            <button class="btn-match" onclick="matchCurrent()">❤</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
